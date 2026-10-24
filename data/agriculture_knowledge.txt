@@ -1,0 +1,92 @@
+RICE
+
+Rice is an important cereal crop.
+Rice generally grows well in warm and humid conditions.
+Suitable soil moisture is important for healthy rice growth.
+Rice requires nutrients such as nitrogen, phosphorus and potassium.
+Nitrogen is important for vegetative growth.
+Phosphorus supports root development and plant growth.
+Potassium helps improve overall plant strength and stress tolerance.
+Irrigation requirements depend on the soil, climate and growth stage.
+Farmers should monitor water levels and avoid unnecessary water use.
+Common rice problems include pests, fungal diseases and nutrient deficiencies.
+
+
+TOMATO
+
+Tomato is a vegetable crop commonly grown in many regions.
+Tomato generally requires adequate sunlight and suitable soil drainage.
+Well-drained soil helps reduce problems caused by excess moisture.
+Tomato plants require nutrients such as nitrogen, phosphorus and potassium.
+Water requirements depend on soil type, weather and plant growth stage.
+Overwatering can increase the risk of some fungal diseases.
+Common tomato diseases include early blight, late blight and leaf-related diseases.
+Common pests include aphids, whiteflies and some caterpillars.
+Farmers should regularly inspect leaves, stems and fruits for signs of pests or disease.
+Removing severely affected plant material can help reduce the spread of some diseases.
+
+
+WHEAT
+
+Wheat is an important cereal crop.
+Wheat generally grows well in cool and relatively dry conditions.
+Suitable soil preparation and drainage are important for wheat cultivation.
+Wheat requires nutrients such as nitrogen, phosphorus and potassium.
+Nitrogen supports leaf and plant growth.
+Phosphorus supports root development.
+Potassium contributes to plant strength and stress tolerance.
+Water requirements depend on the climate, soil and growth stage.
+Excessive irrigation can cause waterlogging and affect plant growth.
+Common wheat problems include fungal diseases, insect pests and nutrient deficiencies.
+Farmers should monitor the crop regularly for signs of disease and pests.
+
+
+FERTILIZER
+
+Fertilizers provide nutrients needed for crop growth.
+The three major nutrients are nitrogen, phosphorus and potassium.
+Nitrogen generally supports leaf and vegetative growth.
+Phosphorus supports root development and plant growth.
+Potassium supports overall plant strength and stress tolerance.
+The appropriate fertilizer depends on the crop, soil condition and nutrient requirements.
+Soil testing can help identify nutrient deficiencies.
+Farmers should avoid applying excessive fertilizer because it can harm crops and the environment.
+Fertilizer application should follow appropriate agricultural recommendations.
+Organic materials such as compost and farmyard manure can also contribute nutrients and improve soil condition.
+
+
+IRRIGATION
+
+Irrigation provides water to crops when natural rainfall is not sufficient.
+The amount of water required depends on the crop, soil type, climate and growth stage.
+Different crops have different irrigation requirements.
+Over-irrigation can cause waterlogging, root problems and nutrient loss.
+Under-irrigation can cause water stress and reduce crop growth.
+Farmers should monitor soil moisture before irrigation.
+Drip irrigation can deliver water directly near the plant roots and may reduce water loss.
+Sprinkler irrigation distributes water over the crop area.
+Efficient irrigation helps conserve water and support healthy crop growth.
+Weather conditions and rainfall should be considered when planning irrigation.
+
+
+PLANT DISEASES
+
+Plant diseases can be caused by fungi, bacteria, viruses and other pathogens.
+
+Early blight commonly affects tomato and potato plants and can cause dark spots on leaves.
+
+Late blight can affect tomato and potato plants and may cause dark lesions on leaves and stems.
+
+Disease symptoms can include leaf spots, yellowing, wilting, abnormal growth and reduced fruit production.
+
+Farmers should regularly inspect leaves, stems and fruits for unusual symptoms.
+
+Good field sanitation can help reduce the spread of some plant diseases.
+
+Removing severely affected plant material may help reduce disease spread in some situations.
+
+Proper irrigation and avoiding excessive moisture can help reduce the risk of some fungal diseases.
+
+Accurate disease identification is important before selecting a management method.
+
+For serious crop disease problems, farmers should consult a qualified agricultural expert or local agricultural extension service.

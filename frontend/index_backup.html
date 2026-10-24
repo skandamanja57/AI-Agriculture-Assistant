@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Agriculture Assistant</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f1f8f3;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 30px;
+        }
+
+        .header p {
+            margin-top: 8px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .container h2 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid #c8e6c9;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #2e7d32;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b5e20;
+        }
+
+        .answer-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f1f8e9;
+            border-left: 5px solid #2e7d32;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .answer-box h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        #answer {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 15px;
+            text-align: center;
+            color: #2e7d32;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>🌾 AI Agriculture Assistant</h1>
+        <p>Smart farming assistance powered by AI</p>
+    </div>
+
+    <div class="container">
+
+        <h2>Ask Your Farming Question</h2>
+
+        <textarea
+            id="question"
+            placeholder="Example: How should tomato plants be watered?"
+        ></textarea>
+
+        <button onclick="askQuestion()">
+            Ask AI 🌱
+        </button>
+
+        <div class="loading" id="loading">
+            🤖 AI is thinking...
+        </div>
+
+        <div class="answer-box" id="answerBox">
+            <h3>AI Agriculture Assistant</h3>
+            <p id="answer"></p>
+        </div>
+
+        <div class="footer">
+            <p>🌱 Helping farmers make better decisions</p>
+        </div>
+
+    </div>
+
+    <script>
+
+        async function askQuestion() {
+
+            const question = document.getElementById("question").value.trim();
+
+            if (question === "") {
+                alert("Please enter a farming question.");
+                return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("answerBox").style.display = "none";
+
+            try {
+
+                const response = await fetch("http://127.0.0.1:8000/ask", {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById("answer").innerText = data.answer;
+
+                document.getElementById("answerBox").style.display = "block";
+
+            } catch (error) {
+
+                document.getElementById("answer").innerText =
+                    "Unable to connect to the AI server. Please make sure the FastAPI server is running.";
+
+                document.getElementById("answerBox").style.display = "block";
+
+            }
+
+            document.getElementById("loading").style.display = "none";
+        }
+
+    </script>
+
+</body>
+</html>

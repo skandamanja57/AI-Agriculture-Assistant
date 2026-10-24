@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriAI | Agriculture Assistant</title>
+<style>
+:root {
+    --green: #237a45;
+    --dark: #173c2a;
+    --light: #f4f8f2;
+    --muted: #718078;
+    --border: #e3eae3;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: Inter, Arial, sans-serif;
+    background: var(--light);
+    color: #20372a;
+    min-height: 100vh;
+}
+.app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+    width: 255px;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    padding: 25px 17px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+.brand { display: flex; gap: 11px; align-items: center; margin-bottom: 28px; }
+.logo {
+    width: 43px; height: 43px; border-radius: 14px;
+    background: #e2f3e5; display: grid; place-items: center;
+    font-size: 24px;
+}
+.brand h2 { font-size: 20px; color: var(--dark); }
+.brand p { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.section-label {
+    font-size: 11px; color: #94a198; font-weight: 700;
+    letter-spacing: 1.2px; margin: 12px 10px 6px;
+}
+.nav-item {
+    width: 100%; text-align: left; padding: 11px 12px;
+    border: 0; border-radius: 10px; background: transparent;
+    color: #526258; font-size: 14px; margin-bottom: 4px; cursor: pointer;
+}
+.nav-item.active { background: #eaf5eb; color: var(--green); font-weight: 700; }
+.nav-item:hover:not(.active) { background: #f3f8f2; }
+
+/* History list in sidebar */
+#historyList { overflow-y: auto; max-height: 180px; }
+.history-item {
+    width: 100%; text-align: left; padding: 9px 12px;
+    border: 0; border-radius: 8px; background: transparent;
+    color: #526258; font-size: 13px; margin-bottom: 3px; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-item:hover { background: #f3f8f2; }
+.history-clear { font-size: 11px; color: #c0392b; background: none; border: none; cursor: pointer; padding: 4px 12px; }
+
+.tip {
+    margin-top: auto; padding: 14px; background: #f0f7ed;
+    border: 1px solid #e0eddb; border-radius: 14px;
+    font-size: 13px; line-height: 1.6;
+}
+.tip strong { display: block; color: var(--green); margin-bottom: 7px; }
+
+/* ── MAIN ── */
+.main { flex: 1; min-width: 0; }
+.topbar {
+    height: 64px; padding: 0 5%; background: white;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.topbar h3 { font-size: 16px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.status { color: var(--green); font-size: 12px; background: #edf7ee; padding: 7px 12px; border-radius: 20px; }
+
+/* Language picker */
+#langSelect {
+    font-size: 12px; padding: 6px 10px; border: 1px solid var(--border);
+    border-radius: 20px; background: white; color: #333; cursor: pointer; outline: none;
+}
+
+.content { max-width: 1000px; padding: 30px 28px 25px; margin: auto; }
+.welcome {
+    background: linear-gradient(120deg, #1d6339, #3e9255);
+    color: white; border-radius: 20px; padding: 28px;
+    position: relative; overflow: hidden;
+}
+.welcome .eyebrow { font-size: 12px; letter-spacing: 1.5px; opacity: .85; font-weight: 700; }
+.welcome h1 { font-size: clamp(22px, 4vw, 34px); margin: 11px 0 9px; }
+.welcome p { line-height: 1.7; max-width: 600px; font-size: 14px; color: #e6f3e7; }
+.welcome .plant { position: absolute; right: 35px; bottom: 0; font-size: 80px; opacity: .85; }
+
+/* ── WEATHER WIDGET ── */
+#weatherWidget {
+    margin-top: 18px;
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 20px; display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap;
+}
+#weatherWidget .weather-icon { font-size: 42px; }
+#weatherWidget .weather-info { flex: 1; min-width: 140px; }
+#weatherWidget .weather-info h4 { font-size: 15px; color: var(--dark); }
+#weatherWidget .weather-info p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+#weatherWidget .weather-advice {
+    flex: 2; font-size: 13px; background: #f2f9f3;
+    border-left: 3px solid var(--green); padding: 10px 14px;
+    border-radius: 0 10px 10px 0; line-height: 1.6;
+}
+#weatherStatus { font-size: 13px; color: var(--muted); }
+
+/* ── CROP CALENDAR ── */
+#cropCalendarSection {
+    margin-top: 18px;
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 20px; display: none;
+}
+#cropCalendarSection h3 { font-size: 15px; margin-bottom: 12px; color: var(--dark); }
+.calendar-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.calendar-controls select, .calendar-controls input {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px;
+    font-size: 13px; outline: none; background: #fafafa;
+}
+.calendar-controls select:focus, .calendar-controls input:focus { border-color: #75ad80; }
+#calendarGrid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+.cal-month {
+    text-align: center; font-size: 10px; font-weight: 700;
+    color: #555; padding: 4px 0;
+}
+.cal-bar {
+    height: 28px; border-radius: 5px; display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 600; color: white;
+    cursor: default;
+}
+.cal-bar.active { background: var(--green); }
+.cal-bar.harvest { background: #e67e22; }
+.cal-bar.empty { background: #eaeaea; color: transparent; }
+#calendarLegend { margin-top: 10px; display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; }
+.leg { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+/* ── SUGGESTION CARDS ── */
+.heading { margin: 24px 0 12px; font-size: 17px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.suggestion {
+    border: 1px solid var(--border); background: white; border-radius: 14px;
+    padding: 16px; text-align: left; cursor: pointer; color: #284332;
+    transition: .2s; min-height: 115px;
+}
+.suggestion:hover { border-color: #80b88a; transform: translateY(-2px); }
+.suggestion .emoji { font-size: 22px; display: block; margin-bottom: 10px; }
+.suggestion strong { display: block; font-size: 13px; margin-bottom: 6px; }
+.suggestion span:last-child { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ── CHAT PANEL ── */
+.chat-panel {
+    background: white; border: 1px solid var(--border); border-radius: 17px;
+    margin-top: 22px; overflow: hidden;
+}
+.chat-title {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+}
+.chat-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+button.clear-chat {
+    background: #f1f7f0; color: #237a45;
+    border: 1px solid #dce9dc; border-radius: 8px;
+    padding: 6px 10px; font-size: 12px; cursor: pointer;
+}
+button.clear-chat:hover { background: #e2f0e2; }
+.chat-body { padding: 20px; min-height: 100px; max-height: 420px; overflow-y: auto; }
+.message { padding: 13px 16px; background: #f3f8f1; border-radius: 4px 14px 14px 14px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; }
+.message.user { background: #e5f2e7; margin: 12px 0; border-radius: 14px 4px 14px 14px; }
+.message-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; margin-top: 12px; }
+.message-label:first-child { margin-top: 0; }
+
+/* ── COMPOSER ── */
+.composer { padding: 14px; border-top: 1px solid var(--border); }
+.composer-row { display: flex; gap: 8px; align-items: flex-end; }
+textarea {
+    flex: 1; resize: vertical; min-height: 60px; max-height: 160px;
+    border: 1px solid #dce6dc; border-radius: 12px; padding: 12px;
+    font: inherit; font-size: 14px; outline: none; background: #fcfdfb;
+}
+textarea:focus { border-color: #75ad80; }
+.composer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 9px; flex-wrap: wrap; }
+.hint { font-size: 11px; color: var(--muted); }
+
+/* Buttons */
+button.send {
+    background: var(--green); color: white; border: 0; border-radius: 10px;
+    padding: 11px 18px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+button.send:hover { background: var(--dark); }
+button:disabled { opacity: .6; cursor: wait; }
+
+/* Voice button */
+#voiceBtn {
+    background: #f0f7ed; border: 1px solid #cce4cf;
+    border-radius: 10px; padding: 10px 13px; cursor: pointer;
+    font-size: 18px; line-height: 1; flex-shrink: 0;
+}
+#voiceBtn.listening { background: #fde8e8; border-color: #f5b7b1; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* Image upload */
+#diseaseSection {
+    margin-top: 18px;
+    background: white; border: 1px solid var(--border); border-radius: 16px;
+    padding: 18px 20px; display: none;
+}
+#diseaseSection h3 { font-size: 15px; margin-bottom: 12px; color: var(--dark); }
+.upload-area {
+    border: 2px dashed #c4ddc8; border-radius: 12px; padding: 30px;
+    text-align: center; cursor: pointer; transition: .2s;
+    background: #fafcfa;
+}
+.upload-area:hover, .upload-area.dragover { border-color: var(--green); background: #f0f9f2; }
+.upload-area p { color: var(--muted); font-size: 13px; margin-top: 8px; }
+#leafPreview { max-width: 100%; max-height: 220px; border-radius: 10px; margin: 14px auto; display: none; }
+#diseaseResult {
+    margin-top: 12px; padding: 14px; background: #f3f8f1;
+    border-radius: 10px; font-size: 13px; line-height: 1.7; display: none;
+}
+#analyzeBtn {
+    background: var(--green); color: white; border: none; border-radius: 10px;
+    padding: 10px 20px; font-weight: 700; cursor: pointer; font-size: 14px;
+    margin-top: 12px; display: none;
+}
+#analyzeBtn:hover { background: var(--dark); }
+
+#loading { display: none; color: var(--green); font-size: 13px; padding: 6px 0; }
+.footer { text-align: center; font-size: 11px; color: #87938a; padding: 20px 0 5px; }
+
+/* ── RESPONSIVE ── */
+@media(max-width: 800px) {
+    .sidebar { width: 200px; }
+    .cards { grid-template-columns: 1fr; }
+    .welcome .plant { font-size: 60px; right: 15px; }
+}
+@media(max-width: 600px) {
+    .sidebar { display: none; }
+    .content { padding: 18px 14px; }
+    .welcome { padding: 22px; }
+    .welcome .plant { display: none; }
+    .topbar { padding: 0 16px; }
+    .cards { grid-template-columns: 1fr 1fr; }
+    #calendarGrid { grid-template-columns: repeat(6, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo">🌱</div>
+            <div><h2>AgriAI</h2><p>SMART FARMING ASSISTANT</p></div>
+        </div>
+
+        <div class="section-label">WORKSPACE</div>
+        <button class="nav-item active" onclick="showView('chat')">✦ &nbsp; AI Farming Assistant</button>
+        <button class="nav-item" onclick="showView('disease')">🔬 &nbsp; Disease Detector</button>
+        <button class="nav-item" onclick="showView('calendar')">📅 &nbsp; Crop Calendar</button>
+
+        <div class="section-label">QUICK TOPICS</div>
+        <button class="nav-item" onclick="askSuggested('How should I water my crops?')">💧 &nbsp; Irrigation advice</button>
+        <button class="nav-item" onclick="askSuggested('How can I identify and manage plant diseases?')">🍃 &nbsp; Plant diseases</button>
+        <button class="nav-item" onclick="askSuggested('How do I choose the right fertilizer for my crop?')">🌾 &nbsp; Fertilizer guidance</button>
+        <button class="nav-item" onclick="askSuggested('How should I care for tomato plants?')">🍅 &nbsp; Crop guidance</button>
+
+        <div class="section-label" style="margin-top:14px;">RECENT CHATS</div>
+        <div id="historyList"></div>
+        <button class="history-clear" onclick="clearHistory()">🗑 Clear history</button>
+
+        <div class="tip">
+            <strong>🌿 Farming tip</strong>
+            Ask clear questions about your crop, soil, watering routine, or plant health to get more useful guidance.
+        </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="main">
+        <header class="topbar">
+            <h3>AI Agriculture Assistant</h3>
+            <div class="topbar-right">
+                <select id="langSelect" title="Response language">
+                    <option value="English">🌐 English</option>
+                    <option value="Hindi">🇮🇳 Hindi</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                    <option value="Bengali">Bengali</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Punjabi">Punjabi</option>
+                    <option value="Spanish">🇪🇸 Spanish</option>
+                    <option value="French">🇫🇷 French</option>
+                </select>
+                <div class="status" id="serverStatus">● &nbsp; Connecting…</div>
+            </div>
+        </header>
+
+        <div class="content">
+            <section class="welcome">
+                <div class="eyebrow">YOUR DIGITAL FARMING PARTNER</div>
+                <h1>Grow smarter with AgriAI.</h1>
+                <p>Get practical guidance for healthier crops, better watering, plant disease management, and everyday farming decisions.</p>
+                <div class="plant">🌿</div>
+            </section>
+
+            <!-- Weather Widget -->
+            <div id="weatherWidget">
+                <div class="weather-icon" id="wIcon">🌤️</div>
+                <div class="weather-info">
+                    <h4 id="wCity">Getting location…</h4>
+                    <p id="wDesc">–</p>
+                    <p id="wTemp"></p>
+                </div>
+                <div class="weather-advice" id="wAdvice">Fetching weather-based farming advice…</div>
+            </div>
+
+            <!-- Crop Calendar (hidden by default, shown via sidebar) -->
+            <div id="cropCalendarSection">
+                <h3>📅 Crop Planting Calendar</h3>
+                <div class="calendar-controls">
+                    <select id="calCrop" onchange="renderCalendar()">
+                        <option value="rice">🌾 Rice</option>
+                        <option value="wheat">🌿 Wheat</option>
+                        <option value="tomato">🍅 Tomato</option>
+                        <option value="maize">🌽 Maize</option>
+                        <option value="potato">🥔 Potato</option>
+                        <option value="sugarcane">🎋 Sugarcane</option>
+                    </select>
+                    <select id="calRegion" onchange="renderCalendar()">
+                        <option value="north_india">North India</option>
+                        <option value="south_india">South India</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+                <div id="calendarGrid"></div>
+                <div id="calendarLegend">
+                    <div class="leg"><div class="leg-dot" style="background:var(--green)"></div> Planting / Growing</div>
+                    <div class="leg"><div class="leg-dot" style="background:#e67e22"></div> Harvest</div>
+                    <div class="leg"><div class="leg-dot" style="background:#eaeaea"></div> Off-season</div>
+                </div>
+                <div id="calendarTip" style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.6;"></div>
+            </div>
+
+            <!-- Disease Detector (hidden by default) -->
+            <div id="diseaseSection">
+                <h3>🔬 Plant Disease Detector</h3>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('leafInput').click()"
+                     ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+                    <div style="font-size:40px;">🍃</div>
+                    <p><strong>Click or drag & drop</strong> a leaf photo here</p>
+                    <p style="font-size:11px;margin-top:4px;">Supported: JPG, PNG, WEBP</p>
+                </div>
+                <input type="file" id="leafInput" accept="image/*" style="display:none" onchange="previewLeaf(event)">
+                <img id="leafPreview" src="" alt="Leaf preview">
+                <button id="analyzeBtn" onclick="analyzeDisease()">🔍 Analyze Leaf</button>
+                <div id="diseaseResult"></div>
+            </div>
+
+            <h2 class="heading">What can I help you with?</h2>
+            <div class="cards">
+                <button class="suggestion" onclick="askSuggested('How should tomato plants be watered?')">
+                    <span class="emoji">🍅</span>
+                    <strong>Crop growing</strong>
+                    <span>Get advice for growing and caring for crops.</span>
+                </button>
+                <button class="suggestion" onclick="askSuggested('How can I identify and manage common plant diseases?')">
+                    <span class="emoji">🍃</span>
+                    <strong>Plant health</strong>
+                    <span>Learn about common plant diseases and prevention.</span>
+                </button>
+                <button class="suggestion" onclick="askSuggested('How do I choose fertilizer for my crops?')">
+                    <span class="emoji">🌾</span>
+                    <strong>Soil & fertilizer</strong>
+                    <span>Explore fertilizer and soil care basics.</span>
+                </button>
+            </div>
+
+            <!-- Chat Panel -->
+            <section class="chat-panel" id="chatPanel">
+                <div class="chat-title">
+                    💬 Farming conversation
+                    <div class="chat-actions">
+                        <span style="font-size:12px;color:var(--muted)" id="chatLangTag"></span>
+                        <button class="clear-chat" onclick="newChat()">Clear chat</button>
+                    </div>
+                </div>
+                <div class="chat-body" id="chatBody">
+                    <div class="message-label">AGRI AI</div>
+                    <div class="message">Hello! 🌱 I'm your agriculture assistant. Ask me a farming question or choose one of the topics above to get started.</div>
+                </div>
+                <div class="composer">
+                    <div class="composer-row">
+                        <textarea id="question" placeholder="Ask about crops, irrigation, fertilizer, or plant diseases…"></textarea>
+                        <button id="voiceBtn" title="Voice input" onclick="toggleVoice()">🎙️</button>
+                    </div>
+                    <div id="loading">🌱 Thinking about your question…</div>
+                    <div class="composer-bottom">
+                        <span class="hint">Sent to your local FastAPI server · <span id="langHint">English</span></span>
+                        <button class="send" id="sendButton" onclick="askQuestion()">Ask AgriAI ↗</button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="footer">AgriAI · Smart farming guidance at your fingertips</div>
+        </div>
+    </main>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   GLOBALS
+════════════════════════════════════════ */
+const API = "http://127.0.0.1:8000";
+const questionInput = document.getElementById("question");
+const chatBody      = document.getElementById("chatBody");
+const loading       = document.getElementById("loading");
+const sendButton    = document.getElementById("sendButton");
+const langSelect    = document.getElementById("langSelect");
+const langHint      = document.getElementById("langHint");
+const chatLangTag   = document.getElementById("chatLangTag");
+const serverStatus  = document.getElementById("serverStatus");
+
+let isListening = false;
+let recognition = null;
+let selectedFile = null;
+let currentView  = "chat";
+
+/* ════════════════════════════════════════
+   SERVER PING
+════════════════════════════════════════ */
+async function pingServer() {
+    try {
+        const r = await fetch(API + "/", { signal: AbortSignal.timeout(3000) });
+        if (r.ok) {
+            serverStatus.textContent = "● \u00a0 Local AI online";
+            serverStatus.style.color = "#237a45";
+            serverStatus.style.background = "#edf7ee";
+        } else { throw new Error(); }
+    } catch {
+        serverStatus.textContent = "○ \u00a0 Server offline";
+        serverStatus.style.color = "#c0392b";
+        serverStatus.style.background = "#fdecea";
+    }
+}
+pingServer();
+setInterval(pingServer, 30000);
+
+/* ════════════════════════════════════════
+   LANGUAGE
+════════════════════════════════════════ */
+langSelect.addEventListener("change", () => {
+    langHint.textContent = langSelect.value;
+    chatLangTag.textContent = langSelect.value !== "English" ? "🌐 " + langSelect.value : "";
+});
+
+/* ════════════════════════════════════════
+   SIDEBAR VIEWS
+════════════════════════════════════════ */
+function showView(view) {
+    currentView = view;
+    document.getElementById("diseaseSection").style.display   = view === "disease"  ? "block" : "none";
+    document.getElementById("cropCalendarSection").style.display = view === "calendar" ? "block" : "none";
+    if (view === "calendar") renderCalendar();
+    // highlight nav
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    const map = { chat: 0, disease: 1, calendar: 2 };
+    document.querySelectorAll(".nav-item")[map[view]]?.classList.add("active");
+}
+
+/* ════════════════════════════════════════
+   CHAT
+════════════════════════════════════════ */
+function addMessage(text, isUser = false) {
+    const label = document.createElement("div");
+    label.className = "message-label";
+    label.textContent = isUser ? "YOU" : "AGRI AI";
+    const msg = document.createElement("div");
+    msg.className = "message" + (isUser ? " user" : "");
+    msg.textContent = text;
+    chatBody.appendChild(label);
+    chatBody.appendChild(msg);
+    msg.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return { label, msg };
+}
+
+function newChat() {
+    chatBody.replaceChildren();
+    addMessage("Hello! 🌱 I'm your agriculture assistant. What would you like to know about farming?");
+    questionInput.value = "";
+    questionInput.focus();
+}
+
+function askSuggested(text) {
+    showView("chat");
+    questionInput.value = text;
+    questionInput.focus();
+    askQuestion();
+}
+
+async function askQuestion() {
+    const question = questionInput.value.trim();
+    if (!question) { questionInput.focus(); return; }
+    const lang = langSelect.value;
+
+    addMessage(question, true);
+    questionInput.value = "";
+    loading.style.display = "block";
+    sendButton.disabled = true;
+
+    // Build prompt with language instruction
+    const finalQuestion = lang !== "English"
+        ? `${question}\n\n[Please respond in ${lang}]`
+        : question;
+
+    try {
+        const response = await fetch(API + "/ask", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: finalQuestion })
+        });
+        if (!response.ok) throw new Error("Server returned status " + response.status);
+        const data = await response.json();
+        const answerText = data.answer || "I couldn't find an answer. Please try another question.";
+        addMessage(answerText);
+        saveChatHistory(question, answerText);
+    } catch (error) {
+        addMessage("⚠️ I couldn't connect to the AI server. Please ensure your FastAPI backend is running at " + API + ", then try again.");
+        console.error(error);
+    } finally {
+        loading.style.display = "none";
+        sendButton.disabled = false;
+        questionInput.focus();
+    }
+}
+
+questionInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askQuestion(); }
+});
+
+/* ════════════════════════════════════════
+   CHAT HISTORY (localStorage)
+════════════════════════════════════════ */
+const HISTORY_KEY = "agriAI_history";
+
+function loadHistory() {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+}
+function saveHistory(arr) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(arr.slice(-20))); // keep last 20
+}
+
+function saveChatHistory(question, answer) {
+    const history = loadHistory();
+    history.push({ q: question, a: answer, ts: Date.now() });
+    saveHistory(history);
+    renderHistoryList();
+}
+
+function renderHistoryList() {
+    const list = document.getElementById("historyList");
+    const history = loadHistory();
+    list.replaceChildren();
+    [...history].reverse().slice(0, 8).forEach((item, i) => {
+        const btn = document.createElement("button");
+        btn.className = "history-item";
+        btn.title = item.q;
+        btn.textContent = "💬 " + item.q.slice(0, 38) + (item.q.length > 38 ? "…" : "");
+        btn.onclick = () => {
+            newChat();
+            addMessage(item.q, true);
+            addMessage(item.a);
+        };
+        list.appendChild(btn);
+    });
+}
+
+function clearHistory() {
+    if (confirm("Clear all chat history?")) {
+        localStorage.removeItem(HISTORY_KEY);
+        renderHistoryList();
+    }
+}
+
+renderHistoryList();
+
+/* ════════════════════════════════════════
+   VOICE INPUT
+════════════════════════════════════════ */
+function toggleVoice() {
+    const btn = document.getElementById("voiceBtn");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Voice input is not supported in this browser. Please try Chrome or Edge.");
+        return;
+    }
+
+    if (isListening) {
+        recognition?.stop();
+        isListening = false;
+        btn.classList.remove("listening");
+        btn.textContent = "🎙️";
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = getLangCode(langSelect.value);
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onresult = e => {
+        const transcript = e.results[0][0].transcript;
+        questionInput.value = transcript;
+        questionInput.focus();
+    };
+    recognition.onerror = () => {
+        btn.classList.remove("listening");
+        btn.textContent = "🎙️";
+        isListening = false;
+    };
+    recognition.onend = () => {
+        btn.classList.remove("listening");
+        btn.textContent = "🎙️";
+        isListening = false;
+    };
+
+    recognition.start();
+    isListening = true;
+    btn.classList.add("listening");
+    btn.textContent = "⏹️";
+}
+
+function getLangCode(name) {
+    const map = {
+        "English": "en-IN", "Hindi": "hi-IN", "Tamil": "ta-IN",
+        "Telugu": "te-IN", "Bengali": "bn-IN", "Marathi": "mr-IN",
+        "Kannada": "kn-IN", "Punjabi": "pa-IN", "Spanish": "es-ES", "French": "fr-FR"
+    };
+    return map[name] || "en-IN";
+}
+
+/* ════════════════════════════════════════
+   WEATHER WIDGET
+════════════════════════════════════════ */
+const weatherIcons = {
+    clear: "☀️", clouds: "☁️", rain: "🌧️", drizzle: "🌦️",
+    thunderstorm: "⛈️", snow: "❄️", mist: "🌫️", haze: "🌫️", fog: "🌫️"
+};
+
+async function loadWeather() {
+    if (!navigator.geolocation) {
+        document.getElementById("wCity").textContent = "Location unavailable";
+        useFallbackWeather();
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        async pos => {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            try {
+                // Open-Meteo is free and doesn't require an API key
+                const meteoUrl =
+                    `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+                    `&current=temperature_2m,relative_humidity_2m,precipitation,weathercode,windspeed_10m` +
+                    `&timezone=auto`;
+                const r = await fetch(meteoUrl);
+                if (!r.ok) throw new Error();
+                const d = await r.json();
+                const cur = d.current;
+                const code = cur.weathercode;
+                const desc = wmoDesc(code);
+                const icon = wmoIcon(code);
+                const temp = Math.round(cur.temperature_2m);
+                const hum  = cur.relative_humidity_2m;
+                const rain = cur.precipitation;
+                const wind = cur.windspeed_10m;
+
+                // Reverse-geocode city name
+                let city = `${lat.toFixed(2)}°N, ${lon.toFixed(2)}°E`;
+                try {
+                    const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+                    if (geo.ok) {
+                        const gd = await geo.json();
+                        city = gd.address?.city || gd.address?.town || gd.address?.village || gd.address?.county || city;
+                    }
+                } catch {}
+
+                document.getElementById("wIcon").textContent = icon;
+                document.getElementById("wCity").textContent = city;
+                document.getElementById("wDesc").textContent = desc;
+                document.getElementById("wTemp").textContent =
+                    `🌡️ ${temp}°C · 💧 ${hum}% humidity · 🌬️ ${wind} km/h`;
+                document.getElementById("wAdvice").textContent =
+                    farmingAdviceFromWeather(temp, hum, rain, code);
+            } catch {
+                useFallbackWeather();
+            }
+        },
+        () => useFallbackWeather()
+    );
+}
+
+function wmoDesc(code) {
+    if (code === 0) return "Clear sky";
+    if (code <= 3) return "Partly cloudy";
+    if (code <= 49) return "Foggy / Hazy";
+    if (code <= 59) return "Drizzle";
+    if (code <= 69) return "Rain";
+    if (code <= 79) return "Snowfall";
+    if (code <= 84) return "Rain showers";
+    if (code <= 99) return "Thunderstorm";
+    return "Unknown";
+}
+
+function wmoIcon(code) {
+    if (code === 0) return "☀️";
+    if (code <= 3)  return "⛅";
+    if (code <= 49) return "🌫️";
+    if (code <= 59) return "🌦️";
+    if (code <= 69) return "🌧️";
+    if (code <= 79) return "❄️";
+    if (code <= 84) return "🌧️";
+    return "⛈️";
+}
+
+function farmingAdviceFromWeather(temp, hum, rain, code) {
+    const tips = [];
+    if (rain > 5)    tips.push("💧 Heavy rain today — skip irrigation; watch for waterlogging.");
+    else if (rain > 0) tips.push("🌦️ Light rain expected — reduce irrigation accordingly.");
+    else if (hum < 40) tips.push("🏜️ Low humidity — increase irrigation frequency for sensitive crops.");
+    else               tips.push("☀️ Dry conditions — monitor soil moisture closely.");
+
+    if (temp > 38)   tips.push("🌡️ Very hot — consider shade nets and water crops in the early morning.");
+    else if (temp > 30) tips.push("☀️ Warm day — water crops in the morning or evening to reduce evaporation.");
+    else if (temp < 10) tips.push("🥶 Cold weather — protect seedlings from frost and reduce watering.");
+
+    if (code >= 80)  tips.push("⛈️ Storms likely — secure crops and avoid applying pesticides today.");
+
+    return tips.join(" ");
+}
+
+function useFallbackWeather() {
+    document.getElementById("wCity").textContent = "Location not shared";
+    document.getElementById("wDesc").textContent = "Enable location for live weather";
+    document.getElementById("wAdvice").textContent =
+        "💡 Share your location to get personalized weather-based farming advice for your area.";
+}
+
+loadWeather();
+
+/* ════════════════════════════════════════
+   CROP CALENDAR
+════════════════════════════════════════ */
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// Data: [grow_start, grow_end, harvest_start, harvest_end] (0-indexed months)
+const CALENDAR_DATA = {
+    rice: {
+        north_india: { grow:[6,9], harvest:[10,11], tip:"Kharif season: Transplant in Jul, harvest Oct-Nov. Ensure consistent flooding during early stages." },
+        south_india: { grow:[5,8], harvest:[9,10], tip:"Transplant Jun–Jul in most south Indian states. Two crops possible in Karnataka and Tamil Nadu." },
+        general:     { grow:[5,8], harvest:[9,10], tip:"Rice grows best in warm, humid conditions with 20–35°C temperatures." }
+    },
+    wheat: {
+        north_india: { grow:[10,2], harvest:[3,4], tip:"Rabi season: Sow Oct–Nov, harvest Mar–Apr. Requires cool winters with moderate rainfall." },
+        south_india: { grow:[10,1], harvest:[2,3], tip:"Wheat is grown in limited areas in south India, mainly in hilly regions like Nilgiris." },
+        general:     { grow:[10,2], harvest:[3,4], tip:"Wheat prefers cool winters (10–22°C) and moderate rainfall of 400–900 mm." }
+    },
+    tomato: {
+        north_india: { grow:[1,3], harvest:[4,5], tip:"Spring-summer crop: Plant Feb–Mar, harvest May–Jun. Winter: Oct–Nov." },
+        south_india: { grow:[6,8], harvest:[9,11], tip:"Kharif tomatoes planted Jun–Aug; harvest Sep–Nov. Year-round possible in some areas." },
+        general:     { grow:[1,4], harvest:[4,6], tip:"Tomatoes need 20–27°C, well-drained soil, and 6–8 hours of sunlight." }
+    },
+    maize: {
+        north_india: { grow:[5,7], harvest:[8,9], tip:"Kharif maize: Sow Jun, harvest Sep. Requires deep, well-drained loamy soil." },
+        south_india: { grow:[5,8], harvest:[9,10], tip:"Two crops possible. Kharif: Jun–Sep; Rabi: Nov–Feb in some regions." },
+        general:     { grow:[4,7], harvest:[8,10], tip:"Maize grows best at 21–27°C with 500–800 mm rainfall over the season." }
+    },
+    potato: {
+        north_india: { grow:[9,11], harvest:[0,2], tip:"Rabi crop: Plant Oct–Nov in plains, harvest Jan–Mar. Requires cool weather (15–20°C)." },
+        south_india: { grow:[9,11], harvest:[1,2], tip:"Grown in hills of Nilgiris, Kodaikanal; also Kharif crop in some hill states." },
+        general:     { grow:[9,11], harvest:[0,2], tip:"Potatoes require cool weather (15–20°C) and loose, well-drained sandy loam soil." }
+    },
+    sugarcane: {
+        north_india: { grow:[1,3], harvest:[11,2], tip:"Plant Feb–Mar; harvest Nov–Mar (15–18 months). Ratoon crop possible for 2–3 years." },
+        south_india: { grow:[0,2], harvest:[11,2], tip:"Year-round planting possible; main planting Dec–Jan. Takes 12–18 months to mature." },
+        general:     { grow:[0,3], harvest:[10,2], tip:"Sugarcane grows in tropical/subtropical climates at 24–30°C with heavy rainfall." }
+    }
+};
+
+function renderCalendar() {
+    const crop   = document.getElementById("calCrop").value;
+    const region = document.getElementById("calRegion").value;
+    const data   = CALENDAR_DATA[crop]?.[region] || CALENDAR_DATA[crop]?.general;
+    if (!data) return;
+
+    const grid = document.getElementById("calendarGrid");
+    grid.replaceChildren();
+
+    // Month headers
+    MONTHS.forEach(m => {
+        const el = document.createElement("div");
+        el.className = "cal-month";
+        el.textContent = m;
+        grid.appendChild(el);
+    });
+
+    const currentMonth = new Date().getMonth();
+
+    // Bar row
+    MONTHS.forEach((_, i) => {
+        const el = document.createElement("div");
+        let state = "empty";
+        const [gs, ge] = data.grow;
+        const [hs, he] = data.harvest;
+
+        // Handle year-wrap-around (e.g., Oct→Feb)
+        const inRange = (s, e, m) =>
+            s <= e ? (m >= s && m <= e) : (m >= s || m <= e);
+
+        if (inRange(hs, he, i))      state = "harvest";
+        else if (inRange(gs, ge, i)) state = "active";
+
+        el.className = "cal-bar " + state;
+        el.textContent = i === currentMonth ? "▼" : "";
+        if (i === currentMonth) el.style.outline = "2px solid #333";
+        el.title = MONTHS[i] + ": " + { active: "Growing season", harvest: "Harvest", empty: "Off-season" }[state];
+        grid.appendChild(el);
+    });
+
+    document.getElementById("calendarTip").textContent = "💡 " + data.tip;
+}
+
+/* ════════════════════════════════════════
+   PLANT DISEASE DETECTOR
+════════════════════════════════════════ */
+function previewLeaf(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    const preview = document.getElementById("leafPreview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+    document.getElementById("analyzeBtn").style.display = "inline-block";
+    document.getElementById("diseaseResult").style.display = "none";
+}
+
+function dragOver(e) {
+    e.preventDefault();
+    document.getElementById("uploadArea").classList.add("dragover");
+}
+function dragLeave(e) {
+    document.getElementById("uploadArea").classList.remove("dragover");
+}
+function dropFile(e) {
+    e.preventDefault();
+    document.getElementById("uploadArea").classList.remove("dragover");
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+        selectedFile = file;
+        const preview = document.getElementById("leafPreview");
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+        document.getElementById("analyzeBtn").style.display = "inline-block";
+        document.getElementById("diseaseResult").style.display = "none";
+    }
+}
+
+async function analyzeDisease() {
+    if (!selectedFile) return;
+    const btn = document.getElementById("analyzeBtn");
+    const result = document.getElementById("diseaseResult");
+    btn.textContent = "⏳ Analyzing…";
+    btn.disabled = true;
+    result.style.display = "none";
+
+    try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const response = await fetch(API + "/detect-disease", {
+            method: "POST",
+            body: formData
+        });
+        if (!response.ok) throw new Error("Server error " + response.status);
+        const data = await response.json();
+        result.style.display = "block";
+        result.innerHTML = `<strong>🔬 Analysis Result</strong><br><br>${data.result.replace(/\n/g, "<br>")}`;
+    } catch (err) {
+        result.style.display = "block";
+        result.textContent = "⚠️ Could not analyze. Make sure the FastAPI backend is running and supports /detect-disease.";
+        console.error(err);
+    } finally {
+        btn.textContent = "🔍 Analyze Leaf";
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
